@@ -1,0 +1,112 @@
+exports.handler = async (event) => {
+
+    const intentName = event.sessionState.intent.name;
+    
+    if(intentName == "welcome") {
+        const userName = event.sessionState.intent.slots.user_name.value.originalValue;
+        return {
+            "sessionState": {
+                "dialogAction": {
+                    "type": "ElicitIntent"
+                }
+            },
+            "messages": [{
+                "contentType": "PlainText",
+                "content": "Hi " + userName + ", how can I help you?"
+            }]
+        }
+    }
+    
+    
+    
+    if(intentName == "reserve_book") {
+        
+        if(event.sessionState.intent.slots.slotbookname != null) {
+            return {
+                "sessionState": {
+                    "dialogAction": {
+                        "type": "Close"
+                    },
+                    "intent": {
+                        "name": "reserve_book",
+                        "state": "Fulfilled"
+                    }
+                }
+            };
+        }
+        
+        if(event.sessionState.intent.slots.slotbookfiction != null || event.sessionState.intent.slots.slotbooknonfiction != null) {
+            return {
+                "sessionState": {
+                    "dialogAction" : {
+                        "slotToElicit": "slotbookname",
+                        "type": "ElicitSlot"
+                    },
+                    "intent": {
+                        "name": "reserve_book",
+                        "state": "InProgress"
+                    }
+                }                
+            };
+        }
+        
+        if(event.sessionState.intent.slots.slotbookcat == null) {
+            return {
+                "sessionState": {
+                    "dialogAction" : {
+                        "slotToElicit": "slotbookcat",
+                        "type": "ElicitSlot"
+                    },
+                    "intent": {
+                        "name": "reserve_book",
+                        "state": "InProgress"
+                    }
+                },
+                "messages": [{
+                    "contentType": "ImageResponseCard",
+                    "imageResponseCard": {
+                        "title": "Choose a category",
+                        "buttons": [
+                            {
+                                "text": "Fiction",
+                                "value": "Fiction"
+                            },
+                            {
+                                "text": "Non Fiction",
+                                "value": "Non-Fiction"
+                            }
+                        ]                            
+                    }
+                }]                
+            };
+        }
+        else if(event.sessionState.intent.slots.slotbookcat.value.interpretedValue == "Fiction") {
+            return {
+                "sessionState": {
+                    "dialogAction" : {
+                        "slotToElicit": "slotbookfiction",
+                        "type": "ElicitSlot"
+                    },
+                    "intent": {
+                        "name": "reserve_book",
+                        "state": "InProgress"
+                    }
+                }
+            };            
+        }
+         else if(event.sessionState.intent.slots.slotbookcat.value.interpretedValue == "Non-Fiction") {
+            return {
+                "sessionState": {
+                    "dialogAction" : {
+                        "slotToElicit": "slotbooknonfiction",
+                        "type": "ElicitSlot"
+                    },
+                    "intent": {
+                        "name": "reserve_book",
+                        "state": "InProgress"
+                    }
+                }
+            };            
+        }       
+    }
+};
